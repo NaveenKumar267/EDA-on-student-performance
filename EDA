@@ -1,0 +1,42 @@
+# student_performance_eda.py
+import pandas as pd
+import matplotlib.pyplot as plt
+# Load dataset (replace with your CSV file path)
+df = pd.read_csv("student_performance.csv")
+# ----- Data Cleaning -----
+# Remove duplicates
+df.drop_duplicates(inplace=True)
+# Fill missing values (example: fill numeric with mean)
+for col in df.select_dtypes(include=['float64', 'int64']):
+    df[col].fillna(df[col].mean(), inplace=True)
+# Standardize column names
+df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+# ----- Data Transformation -----
+# Create a new column: total study time per week
+if 'daily_study_hours' in df.columns:
+    df['weekly_study_hours'] = df['daily_study_hours'] * 7
+# Categorize performance
+if 'final_score' in df.columns:
+    df['performance_level'] = pd.cut(
+        df['final_score'],
+        bins=[0, 50, 75, 100],
+        labels=['Low', 'Medium', 'High']
+    )
+# ----- Visualization -----
+# 1. Attendance vs Final Score
+if 'attendance' in df.columns and 'final_score' in df.columns:
+    plt.scatter(df['attendance'], df['final_score'])
+    plt.xlabel("Attendance (%)")
+    plt.ylabel("Final Score")
+    plt.title("Attendance vs Final Score")
+    plt.show()
+# 2. Study hours distribution
+if 'weekly_study_hours' in df.columns:
+    df['weekly_study_hours'].hist(bins=10)
+    plt.xlabel("Weekly Study Hours")
+    plt.ylabel("Number of Students")
+    plt.title("Distribution of Study Hours")
+    plt.show()
+# Save cleaned dataset
+df.to_csv("student_performance_cleaned.csv", index=False)
+print("EDA completed and cleaned data saved as 'student_performance_cleaned.csv'")
